@@ -1,20 +1,21 @@
 # importing required modules
 import PyPDF2
  
-# creating a pdf file object
-pdfFileObj = open('2019-Ford-Lincoln-Supplement-version-1_su_EN-US_03_2018.pdf', 'rb')
+if __name__ == '__main__':
+  # creating a pdf file object
+  pdfFileObj = open('../RawPDF/2017_Rio_UVOUM.pdf', 'rb')
  
-# creating a pdf reader object
-pdfReader = PyPDF2.PdfFileReader(pdfFileObj)
+  # creating a pdf reader object
+  pdfReader = PyPDF2.PdfFileReader(pdfFileObj)
  
-# printing number of pages in pdf file
-print(pdfReader.numPages)
+  # printing number of pages in pdf file
+  print(pdfReader.numPages)
  
-# creating a page object
-pageObj = pdfReader.getPage(5)
+  # creating a page object
+  pageObj = pdfReader.getPage(20)
  
-# extracting text from page
-print(pageObj.extractText().encode('utf-8'))
-print(type(pageObj.extractText()))
-# closing the pdf file object
-pdfFileObj.close()
+  # extracting text from page
+  print(pageObj.extractText().encode('utf-8'))
+  print(type(pageObj.extractText()))
+  # closing the pdf file object
+  pdfFileObj.close()

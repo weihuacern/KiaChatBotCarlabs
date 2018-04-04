@@ -39,22 +39,23 @@ def pdf_page_to_png(src_pdf, pagenum = 0, resolution = 72):
     dst_pdf.write(pdf_bytes)
     pdf_bytes.seek(0)
 
-    #print(pdf_bytes)
+    print(pdf_bytes)
     #img = Image.open(pdf_bytes)
-    img = Image(file = pdf_bytes, resolution = resolution)
+    img = Image(file = pdf_bytes)
+    #img = Image(file = pdf_bytes, resolution = resolution)
     img.convert("png")
 
     return img
 
 if __name__ == '__main__':
-    src_pdf = PyPDF2.PdfFileReader(open("test.pdf", "rb"))
+    src_pdf = PyPDF2.PdfFileReader(open("../DecryptedPDF/qpdfHacked_2017_Rio_OM.pdf", "rb"))
     print (src_pdf.getIsEncrypted())
     #src_pdf.decrypt('')
     print (src_pdf.getNumPages())
   
     #page = src_pdf.getPage(0)
-    img = pdf_page_to_png(src_pdf, pagenum = 0, resolution = 300)
-    img.save(filename = "testpage0_2017_Rio_OM.png")
+    img = pdf_page_to_png(src_pdf, pagenum = 2)
+    img.save(filename = "testpage20_2017_Rio_OM.png")
     #img.transform("", "200")
     #img.save(filename = small_filename)
 
