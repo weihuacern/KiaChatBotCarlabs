@@ -12,7 +12,7 @@ if __name__ == '__main__':
   print(pdfReader.numPages)
  
   # creating a page object
-  pageObj = pdfReader.getPage(20)
+  pageObj = pdfReader.getPage(117)
  
   # extracting text from page
   print(pageObj.extractText().encode('utf-8'))

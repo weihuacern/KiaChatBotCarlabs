@@ -1,5 +1,8 @@
 import os
+import re
 import PyPDF2
+import pandas as pd
+import sqlalchemy
 
 class PDFDecryptor:
   def __init__(self, inputfname_list):
@@ -32,32 +35,77 @@ class PDFDecryptor:
       self.DecrypteOnePDF( fname )
     return
 
+
 class PDFToSQLText:
-  def __init__(self, fname):
+  def __init__(self, d, fname):
+    self.d = d
     self.fname = fname
     return
  
-  def GetTextOnePage(self, ):
+  def GetTextOnePage(self, pagenum):
     # creating a pdf file object
-    pdfFileObj = open('2019-Ford-Lincoln-Supplement-version-1_su_EN-US_03_2018.pdf', 'rb')
-
+    pdfFileObj = open(self.d + self.fname, 'rb')
     # creating a pdf reader object
     pdfReader = PyPDF2.PdfFileReader(pdfFileObj)
+    # total number of pages in pdf file
+    totpagnums = pdfReader.numPages
+    # creating a page object
+    pageObj = pdfReader.getPage(pagenum)
+    # extracting text from page
+    thistext = pageObj.extractText().encode('utf-8')
+    #thistext = (pageObj.extractText().encode('utf-8')).decode("utf-8")
+    #print(type(pageObj.extractText()))
+    
+    #for i in range(totpagnums):
+    #  pageObj = pdfReader.getPage(i)
+      # extracting text from page
+    #  print(pageObj.extractText().encode('utf-8'))
+    #  print(type(pageObj.extractText()))
 
-    # printing number of pages in pdf file
-    print(pdfReader.numPages)
+    # closing the pdf file object
+    pdfFileObj.close()
+    return thistext
 
-# creating a page object
-pageObj = pdfReader.getPage(5)
+  def ConvertToPandas(self):
+  # designed (index) schema: filename, year, model, doc type, page number, text
+    df = pd.DataFrame( columns=['filename', 'year', 'model', 'doctype', 'pagenum', 'text'] )
+    docinfo = self.fname.split('_')
+    #print (docinfo)
+    if( len(docinfo) == 3 ):
+      year, model, doctype = self.fname.split('_')
+    elif( len(docinfo) == 4 ):
+      tmp, year, model, doctype = self.fname.split('_')
+    else:
+      print(self.fname)
+      print("Wrong file name, please check!")
+      return
 
-# extracting text from page
-print(pageObj.extractText().encode('utf-8'))
-print(type(pageObj.extractText()))
-# closing the pdf file object
-pdfFileObj.close()
+    pdfFileObj = open(self.d + self.fname, 'rb')
+    pdfReader = PyPDF2.PdfFileReader(pdfFileObj)
+    totpagnums = pdfReader.numPages
+    print(totpagnums)
+    index = 0
+    for i in range(totpagnums):
+      pageObj = pdfReader.getPage(i)
+      # extracting text from page
+      thistexts = (pageObj.extractText().encode('utf-8').strip()).split(b'.')
+      #print(thistexts.split(b'\n'))
+      #print(len(thistexts.split(b'\n')))
+      for thistext in thistexts:
+        #print (thistext)
+        if ( len(thistext) > 0 and re.compile(b"^[A-Za-z]").match(thistext) ):
+          asctext = thistext.decode("ascii", "ignore")
+          if i <= 4:
+            print (i)
+            print (pageObj)
+            #print (asctext)
+            #print (thistext)
+          #print(re.compile(b"^[A-Za-z]").match(thistext))
+          df.loc[index] = [self.fname, year, model, doctype, i, asctext]
+          index += 1
 
-  .getNumPages() 
-  # designed (index) schema: filename, year, make, doc type, page number, text
+    return df
+    
 
 class PDFToSQLImage:
   def __init__(self, fname):
@@ -70,5 +118,14 @@ if __name__ == "__main__":
   #rawfname_list = ['2017_Rio_FFG.pdf', '2017_Rio_NaviQG.pdf', '2017_Rio_NaviUM.pdf', '2017_Rio_OM.pdf', '2017_Rio_UVOQG.pdf', '2017_Rio_UVOUM.pdf']
   #myPDFDecryptor = PDFDecryptor(rawfname_list)
   #myPDFDecryptor.DecrypteAllPDF()
+  
+  #myPDFToSQLText = PDFToSQLText( "../RawPDF/", "2017_Rio_FFG.pdf" )
+  myPDFToSQLText = PDFToSQLText( "../DecryptedPDF/", "qpdfHacked_2017_Rio_OM.pdf" )
+  #print(myPDFToSQLText.GetTextOnePage(31))
+  df = myPDFToSQLText.ConvertToPandas()
+  print (df.head())
+  print (df.describe())
+  print (len(df))
 
-
+  engine = sqlalchemy.create_engine('sqlite:///KIATextInfo.db')
+  df.to_sql(name = 'Test', con = engine, if_exists = 'replace', index = False)
