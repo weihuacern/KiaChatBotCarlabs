@@ -48,7 +48,10 @@ def pdf_page_to_png(src_pdf, pagenum = 0, resolution = 72):
     return img
 
 if __name__ == '__main__':
-    src_pdf = PyPDF2.PdfFileReader(open("../DecryptedPDF/qpdfHacked_2017_Rio_OM.pdf", "rb"))
+    src_pdf = PyPDF2.PdfFileReader(open("../DecryptedPDF/qpdfHacked_2018_Rio_OM.pdf", "rb"))
+    #src_pdf = PyPDF2.PdfFileReader(open("../RawPDF/2018_Rio_OM.pdf", "rb"))
+    #src_pdf = PyPDF2.PdfFileReader(open("/Users/ustc-weihua/Desktop/CarlabsKIA/2017_Rio_NaviQG.pdf", "rb"))
+    #src_pdf = PyPDF2.PdfFileReader(open("/Users/ustc-weihua/Desktop/CarlabsKIA/2007_Rio_FFG.pdf", "rb"))
     print (src_pdf.getIsEncrypted())
     #src_pdf.decrypt('')
     print (src_pdf.getNumPages())
@@ -56,75 +59,8 @@ if __name__ == '__main__':
     #page = src_pdf.getPage(0)
     img = pdf_page_to_png(src_pdf, pagenum = 0)
     img.save(filename = "testpage0_2017_Rio_OM.png")
-    img = pdf_page_to_png(src_pdf, pagenum = 2)
-    img.save(filename = "testpage2_2017_Rio_OM.png")
+    img = pdf_page_to_png(src_pdf, pagenum = 9)
+    img.save(filename = "testpage9_2017_Rio_OM.png")
     #img.transform("", "200")
     #img.save(filename = small_filename)
 
-    '''
-    xObject = page0['/Resources']['/XObject'].getObject()
-
-    for obj in xObject:
-        if xObject[obj]['/Subtype'] == '/Image':
-            size = (xObject[obj]['/Width'], xObject[obj]['/Height'])
-            data = xObject[obj].getData()
-            if xObject[obj]['/ColorSpace'] == '/DeviceRGB':
-                mode = "RGB"
-            else:
-                mode = "P"
-
-            if xObject[obj]['/Filter'] == '/FlateDecode':
-                img = Image.frombytes(mode, size, data)
-                img.save(obj[1:] + ".png")
-            elif xObject[obj]['/Filter'] == '/DCTDecode':
-                img = open(obj[1:] + ".jpg", "wb")
-                img.write(data)
-                img.close()
-            elif xObject[obj]['/Filter'] == '/JPXDecode':
-                img = open(obj[1:] + ".jp2", "wb")
-                img.write(data)
-                img.close()
-
-if __name__ == '__main__':
-  input1 = PyPDF2.PdfFileReader(open("2019-Ford-Lincoln-Supplement-version-1_su_EN-US_03_2018.pdf", "rb"))
-  thepage = input1.getPage(6)
-  print(thepage)
-  xObject = thepage['/Resources']['/XObject'].getObject()
-
-  for obj in xObject:
-    if xObject[obj]['/Subtype'] == '/Image':
-      size = (xObject[obj]['/Width'], xObject[obj]['/Height'])
-      #print (type(xObject[obj]['/ColorSpace']))
-      #if xObject[obj]['/ColorSpace'] == '/DeviceRGB':
-      #  mode = "RGB"
-      #else:
-      #  mode = "P"
-      mode = ""
-      if xObject[obj]['/Filter'] == '/FlateDecode':
-        data = xObject[obj].getData()
-        img = Image.frombytes(mode, size, data)
-        img.save(obj[1:] + ".png")
-      elif xObject[obj]['/Filter'] == '/DCTDecode':
-        data = xObject[obj].getData()
-        img = open(obj[1:] + ".jpg", "wb")
-        img.write(data)
-        img.close()
-      elif xObject[obj]['/Filter'] == '/JPXDecode':
-        data = xObject[obj].getData()
-        img = open(obj[1:] + ".jp2", "wb")
-        img.write(data)
-        img.close()
-      elif xObject[obj]['/Filter'] == '/CCITTFaxDecode':
-        if xObject[obj]['/DecodeParms']['/K'] == -1:
-          CCITT_group = 4
-        else:
-          CCITT_group = 3
-        width = xObject[obj]['/Width']
-        height = xObject[obj]['/Height']
-        data = xObject[obj]._data  # sorry, getData() does not work for CCITTFaxDecode
-        img_size = len(data)
-        tiff_header = tiff_header_for_CCITT(width, height, img_size, CCITT_group)
-        img_name = "{}{:04}.tiff".format("IMG_", 0)
-        with open(img_name, 'wb') as img_file:
-          img_file.write(tiff_header + data)
-  '''
