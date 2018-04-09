@@ -299,8 +299,13 @@ if __name__ == "__main__":
       df_text.to_sql(name = tablename, con = engine, if_exists = 'replace', index = False)
   
   elif sys.argv[1] == 'imagedb':
-    #myPDFToSQLImage = PDFToSQLImage( "../DecryptedPDF/", "qpdfHacked_2018_Rio_OM.pdf" )
-    myPDFToSQLImage = PDFToSQLImage( "../RawPDF/", "2018_Rio_FFG.pdf" )
-    df_image = myPDFToSQLImage.ConvertToPandas("/Users/ustc-weihua/KiaChatBotCarlabs/Images/")
-    engine = sqlalchemy.create_engine('sqlite:///KIAImageInfo.db')
-    df_image.to_sql(name = 'Test', con = engine, if_exists = 'replace', index = False)
+    inputinfo = [ ("../RawPDF/", "2017_Rio_FFG.pdf"), ("../RawPDF/", "2017_Rio_UVOUM.pdf"), ("../RawPDF/", "2017_Rio_UVOQG.pdf"), ("../RawPDF/", "2017_Rio_NaviUM.pdf"), ("../RawPDF/", "2017_Rio_NaviQG.pdf"), ("../DecryptedPDF/", "qpdfHacked_2018_Rio_OM.pdf") ]
+    for thisinfo in inputinfo:
+      print(thisinfo)
+      #myPDFToSQLImage = PDFToSQLImage( "../DecryptedPDF/", "qpdfHacked_2018_Rio_OM.pdf" )
+      #myPDFToSQLImage = PDFToSQLImage( "../RawPDF/", "2018_Rio_FFG.pdf" )
+      myPDFToSQLImage = PDFToSQLImage( thisinfo[0], thisinfo[1] )
+      df_image = myPDFToSQLImage.ConvertToPandas("/Users/ustc-weihua/KiaChatBotCarlabs/Images/")
+      engine = sqlalchemy.create_engine('sqlite:///KIAImageInfo.db')
+      tablename = os.path.splitext(thisinfo[1])[0]
+      df_image.to_sql(name = tablename, con = engine, if_exists = 'replace', index = False)
