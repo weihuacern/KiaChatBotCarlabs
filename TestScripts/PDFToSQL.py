@@ -241,7 +241,12 @@ class PDFToSQLImage:
     # designed (index) schema: filename, page number, image byte
     df = pd.DataFrame( columns=['filename', 'pagenum', 'filepath'] )
     year, model, doctype = splitfname(self.fname)
-
+    do = dbase + year + "/" + model + "/" + os.path.splitext(doctype)[0] + "/"
+    # em... need to think about this, generate image directly by 
+    os.makedirs(do, exist_ok=True)
+    cmd = "convert -density 300 -depth 8 -quality 85 " + self.d + self.fname + " " + do + os.path.splitext(self.fname)[0] + ".png"
+    print(cmd)
+    os.system(cmd)
     # Open and read the pdf file in binary mode
     pdfReader = PyPDF2.PdfFileReader(open(self.d + self.fname, 'rb'))
     totpagnums = pdfReader.numPages
@@ -254,12 +259,11 @@ class PDFToSQLImage:
       #pdf_bytes.seek(0)
       #print(pdf_bytes)
       #df.loc[index] = [self.fname, i+1, pdf_bytes]
-      do = dbase + year + "/" + model + "/" + os.path.splitext(doctype)[0] + "/"
-      fnameo = os.path.splitext(self.fname)[0] + "_page" + str(i+1) + ".png" 
+      fnameo = os.path.splitext(self.fname)[0] + "-" + str(i) + ".png" 
       fpath = do + fnameo
-      os.makedirs(do, exist_ok=True)
-      img = self.pdf_page_to_png(pdfReader, pagenum = i)
-      img.save(filename = fpath)
+      #os.makedirs(do, exist_ok=True)
+      #img = self.pdf_page_to_png(pdfReader, pagenum = i)
+      #img.save(filename = fpath)
       print(fpath)
       df.loc[index] = [self.fname, i+1, fpath]
       index += 1
