@@ -280,15 +280,19 @@ if __name__ == "__main__":
     myPDFDecryptor.DecrypteAllPDF()
   
   elif sys.argv[1] == 'textdb':
-    myPDFToSQLText = PDFToSQLText( "../RawPDF/", "2017_Rio_FFG.pdf" )
-    myPDFToSQLText = PDFToSQLText( "../DecryptedPDF/", "qpdfHacked_2018_Rio_OM.pdf" )
-    #print(myPDFToSQLText.GetTextOnePage(31))
-    df_text = myPDFToSQLText.ConvertToPandas()
-    #print (df_text.head())
-    #print (df_text.describe())
-    #print (len(df_text))
-    engine = sqlalchemy.create_engine('sqlite:///KIATextInfo.db')
-    df_text.to_sql(name = 'Test', con = engine, if_exists = 'replace', index = False)
+    inputinfo = [ ("../RawPDF/", "2017_Rio_FFG.pdf"), ("../RawPDF/", "2017_Rio_UVOUM.pdf"), ("../RawPDF/", "2017_Rio_UVOQG.pdf"), ("../RawPDF/", "2017_Rio_NaviUM.pdf"), ("../RawPDF/", "2017_Rio_NaviQG.pdf"), ("../DecryptedPDF/", "qpdfHacked_2018_Rio_OM.pdf") ]
+    for thisinfo in inputinfo:
+      print(thisinfo)
+      #myPDFToSQLText = PDFToSQLText( "../RawPDF/", "2017_Rio_FFG.pdf" )
+      myPDFToSQLText = PDFToSQLText( thisinfo[0], thisinfo[1] )
+      #print(myPDFToSQLText.GetTextOnePage(31))
+      df_text = myPDFToSQLText.ConvertToPandas()
+      #print (df_text.head())
+      #print (df_text.describe())
+      #print (len(df_text))
+      engine = sqlalchemy.create_engine('sqlite:///KIATextInfo.db')
+      tablename = os.path.splitext(thisinfo[1])[0]
+      df_text.to_sql(name = tablename, con = engine, if_exists = 'replace', index = False)
   
   elif sys.argv[1] == 'imagedb':
     #myPDFToSQLImage = PDFToSQLImage( "../DecryptedPDF/", "qpdfHacked_2018_Rio_OM.pdf" )
