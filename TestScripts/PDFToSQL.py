@@ -1,9 +1,13 @@
 import os
 import re
-import PyPDF2
+import argparse
 import pandas as pd
 import sqlalchemy
 import io
+import sys, getopt
+
+import PyPDF2
+from wand.image import Image
 
 #ok PyPDF2 sucks! move to pdfminer for text
 from pdfminer.pdfparser import PDFParser
@@ -13,6 +17,20 @@ from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
 from pdfminer.pdfpage import PDFTextExtractionNotAllowed
 from pdfminer.layout import LAParams, LTTextBox, LTTextLine
 from pdfminer.converter import PDFPageAggregator
+
+def splitfname(fname):
+  docinfo = fname.split('_')
+  if( len(docinfo) == 3 ):
+    year, model, doctype = fname.split('_')
+    return year, model, doctype
+  elif( len(docinfo) == 4 ):
+    tmp, year, model, doctype = fname.split('_')
+    return year, model, doctype
+  else:
+    print(self.fname)
+    print("Wrong file name, please check!")
+    return
+
 
 class PDFDecryptor:
   def __init__(self, inputfname_list):
@@ -79,16 +97,9 @@ class PDFToSQLText:
   def ConvertToPandas(self):
     # designed (index) schema: filename, year, model, doc type, page number, text
     df = pd.DataFrame( columns=['filename', 'year', 'model', 'doctype', 'pagenum', 'text'] )
-    docinfo = self.fname.split('_')
+    #docinfo = self.fname.split('_')
     #print (docinfo)
-    if( len(docinfo) == 3 ):
-      year, model, doctype = self.fname.split('_')
-    elif( len(docinfo) == 4 ):
-      tmp, year, model, doctype = self.fname.split('_')
-    else:
-      print(self.fname)
-      print("Wrong file name, please check!")
-      return
+    year, model, doctype = splitfname(self.fname)
 
     # Open and read the pdf file in binary mode
     fp = open(self.d + self.fname, 'rb') 
@@ -190,45 +201,98 @@ class PDFToSQLImage:
     self.fname = fname
     return
 
-  def ConvertToPandas(self):
+  def pdf_page_to_png(self, src_pdf, pagenum = 0, resolution = 72):
+    """
+    Returns specified PDF page as wand.image.Image png.
+    :param PyPDF2.PdfFileReader src_pdf: PDF from which to take pages.
+    :param int pagenum: Page number to take.
+    :param int resolution: Resolution for resulting png in DPI.
+    """
+    try:
+      dst_pdf = PyPDF2.PdfFileWriter()
+      dst_pdf.addPage(src_pdf.getPage(pagenum))
+
+      pdf_bytes = io.BytesIO()
+      dst_pdf.write(pdf_bytes)
+      pdf_bytes.seek(0)
+
+      print(pdf_bytes)
+      img = Image(file = pdf_bytes)
+      img.convert("png")
+
+      return img
+    
+    except:
+      dst_pdf = PyPDF2.PdfFileWriter()
+      dst_pdf.addPage(PyPDF2.PdfFileReader(open("../RawPDF/erroricon.pdf", 'rb')).getPage(0))
+
+      pdf_bytes = io.BytesIO()
+      dst_pdf.write(pdf_bytes)
+      pdf_bytes.seek(0)
+
+      print(pdf_bytes)
+      img = Image(file = pdf_bytes)
+      img.convert("png")
+
+      return img
+
+
+  def ConvertToPandas(self, dbase):
     # designed (index) schema: filename, page number, image byte
-    df = pd.DataFrame( columns=['filename', 'pagenum', 'image'] )
+    df = pd.DataFrame( columns=['filename', 'pagenum', 'filepath'] )
+    year, model, doctype = splitfname(self.fname)
 
     # Open and read the pdf file in binary mode
     pdfReader = PyPDF2.PdfFileReader(open(self.d + self.fname, 'rb'))
     totpagnums = pdfReader.numPages
     index = 0
     for i in range(totpagnums):
-      pdfWriter = PyPDF2.PdfFileWriter()
-      pdfWriter.addPage(pdfReader.getPage(i))
-      pdf_bytes = io.BytesIO()
-      pdfWriter.write(pdf_bytes)
-      pdf_bytes.seek(0)
+      #pdfWriter = PyPDF2.PdfFileWriter()
+      #pdfWriter.addPage(pdfReader.getPage(i))
+      #pdf_bytes = io.BytesIO()
+      #pdfWriter.write(pdf_bytes)
+      #pdf_bytes.seek(0)
       #print(pdf_bytes)
-      df.loc[index] = [self.fname, i+1, pdf_bytes]
+      #df.loc[index] = [self.fname, i+1, pdf_bytes]
+      do = dbase + year + "/" + model + "/" + os.path.splitext(doctype)[0] + "/"
+      fnameo = os.path.splitext(self.fname)[0] + "_page" + str(i+1) + ".png" 
+      fpath = do + fnameo
+      os.makedirs(do, exist_ok=True)
+      img = self.pdf_page_to_png(pdfReader, pagenum = i)
+      img.save(filename = fpath)
+      print(fpath)
+      df.loc[index] = [self.fname, i+1, fpath]
       index += 1
 
     return df
 
 if __name__ == "__main__":
 
-  #rawfname_list = ['2017_Rio_FFG.pdf', '2017_Rio_NaviQG.pdf', '2017_Rio_NaviUM.pdf', '2017_Rio_OM.pdf', '2017_Rio_UVOQG.pdf', '2017_Rio_UVOUM.pdf']
-  #rawfname_list = ['2018_Rio_OM.pdf']
-  #myPDFDecryptor = PDFDecryptor(rawfname_list)
-  #myPDFDecryptor.DecrypteAllPDF()
+  print(sys.argv) # mode can be textdb, imagedb or decryption
+  #try:
+  #  opts, args = getopt.getopt(argv)
+  #except getopt.GetoptError:
+  #  print('PDFToSQL.p -m mode; (mode can be text, image or decrption)')
+  if sys.argv[1] == 'decryption':
+    rawfname_list = ['2017_Rio_FFG.pdf', '2017_Rio_NaviQG.pdf', '2017_Rio_NaviUM.pdf', '2017_Rio_OM.pdf', '2017_Rio_UVOQG.pdf', '2017_Rio_UVOUM.pdf']
+    #rawfname_list = ['2018_Rio_OM.pdf']
+    myPDFDecryptor = PDFDecryptor(rawfname_list)
+    myPDFDecryptor.DecrypteAllPDF()
   
-  #myPDFToSQLText = PDFToSQLText( "../RawPDF/", "2017_Rio_FFG.pdf" )
-  #myPDFToSQLText = PDFToSQLText( "../DecryptedPDF/", "qpdfHacked_2018_Rio_OM.pdf" )
-  #print(myPDFToSQLText.GetTextOnePage(31))
-  #df_text = myPDFToSQLText.ConvertToPandas()
-  #print (df_text.head())
-  #print (df_text.describe())
-  #print (len(df_text))
-  #engine = sqlalchemy.create_engine('sqlite:///KIATextInfo.db')
-  #df_text.to_sql(name = 'Test', con = engine, if_exists = 'replace', index = False)
-
-
-  myPDFToSQLImage = PDFToSQLImage( "../DecryptedPDF/", "qpdfHacked_2018_Rio_OM.pdf" )
-  df_image = myPDFToSQLImage.ConvertToPandas()
-  engine = sqlalchemy.create_engine('sqlite:///KIAImageInfo.db')
-  df_image.to_sql(name = 'Test', con = engine, if_exists = 'replace', index = False)
+  elif sys.argv[1] == 'textdb':
+    myPDFToSQLText = PDFToSQLText( "../RawPDF/", "2017_Rio_FFG.pdf" )
+    myPDFToSQLText = PDFToSQLText( "../DecryptedPDF/", "qpdfHacked_2018_Rio_OM.pdf" )
+    #print(myPDFToSQLText.GetTextOnePage(31))
+    df_text = myPDFToSQLText.ConvertToPandas()
+    #print (df_text.head())
+    #print (df_text.describe())
+    #print (len(df_text))
+    engine = sqlalchemy.create_engine('sqlite:///KIATextInfo.db')
+    df_text.to_sql(name = 'Test', con = engine, if_exists = 'replace', index = False)
+  
+  elif sys.argv[1] == 'imagedb':
+    #myPDFToSQLImage = PDFToSQLImage( "../DecryptedPDF/", "qpdfHacked_2018_Rio_OM.pdf" )
+    myPDFToSQLImage = PDFToSQLImage( "../RawPDF/", "2018_Rio_FFG.pdf" )
+    df_image = myPDFToSQLImage.ConvertToPandas("/Users/ustc-weihua/KiaChatBotCarlabs/Images/")
+    engine = sqlalchemy.create_engine('sqlite:///KIAImageInfo.db')
+    df_image.to_sql(name = 'Test', con = engine, if_exists = 'replace', index = False)

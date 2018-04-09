@@ -58,9 +58,9 @@ if __name__ == '__main__':
   
     #page = src_pdf.getPage(0)
     img = pdf_page_to_png(src_pdf, pagenum = 0)
-    img.save(filename = "testpage0_2017_Rio_OM.png")
-    img = pdf_page_to_png(src_pdf, pagenum = 9)
-    img.save(filename = "testpage9_2017_Rio_OM.png")
+    img.save(filename = "testpage0_2018_Rio_OM.png")
+    img = pdf_page_to_png(src_pdf, pagenum = 3)
+    img.save(filename = "testpage9_2018_Rio_OM.png")
     #img.transform("", "200")
     #img.save(filename = small_filename)
 
