@@ -30,5 +30,3 @@ if __name__ == '__main__':
       sentences.append(wordsFiltered)
 
   print(sentences)
-
-
