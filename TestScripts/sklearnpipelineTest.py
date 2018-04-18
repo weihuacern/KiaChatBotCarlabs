@@ -1,9 +1,12 @@
+import sys
+
 from sklearn.pipeline import Pipeline
 from sklearn import base
 
 import pandas as pd
 import numpy as np
 
+import nltk
 from nltk.tokenize import sent_tokenize, word_tokenize
 from nltk.corpus import stopwords
 from nltk.tokenize import RegexpTokenizer
@@ -56,11 +59,19 @@ class ColumnSelectorTokenization(base.BaseEstimator, base.TransformerMixin):
 
 if __name__ == "__main__":
 
-  # Create your connection.
-  con = sqlite3.connect('KIATextInfo.db')
+  print(gensim.__version__)
+  print(nltk.__version__)
+  make = str(sys.argv[1])
+  model = str(sys.argv[2])
+  year = str(sys.argv[3])
+  #Create your connection.
+  con = sqlite3.connect(make + 'TextInfo.db')
   cursor = con.cursor()
   cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
-  sqlcmds = [ ("SELECT * FROM `" + x[0] + "`;") for x in (cursor.fetchall()) ]
+  #print( [x[0] for x in (cursor.fetchall()) if model in x[0] and year in x[0]] )
+  #sys.exit()
+
+  sqlcmds = [ ("SELECT * FROM `" + x[0] + "`;") for x in (cursor.fetchall()) if model in x[0] and year in x[0] ]
   df = pd.DataFrame()
   for sqlcmd in sqlcmds:
     tmpdf = pd.read_sql_query(sqlcmd, con)
@@ -72,12 +83,18 @@ if __name__ == "__main__":
   res = pre.fit_transform(df)
   #print(res['text'].values)
 
-  model = gensim.models.Word2Vec(res['text'].values, min_count=1)
-  #print(model.similarity('feature', 'fuel'))
+  #w2vmodel = gensim.models.Word2Vec(res['text'].values, min_count=1)
+  w2vmodelname = make + "_" + model + "_" + year + "_w2v.model"
+  #w2vmodel.save(w2vmodelname)
+  w2vmodel = gensim.models.Word2Vec.load(w2vmodelname)
+  #sys.exit()
+  #print(w2vmodel.similarity('feature', 'fuel'))
   score_res = []
   for target in res['text'].values:
-    score_res.append( ( target, model.n_similarity(['speed', 'limit', 'alert'], target) ) )
-    #print(model.n_similarity(['speed', 'limit', 'alert'], target))
+    score_res.append( ( target, w2vmodel.n_similarity(['speed', 'limit', 'alert'], target) ) )
+    print(target)
+    #score_res.append( ( target, w2vmodel.n_similarity(['who', 'is', 'your', 'daddy'], target) ) )
+    #print(w2vmodel.n_similarity(['speed', 'limit', 'alert'], target))
 
   sorted_score_res = sorted(score_res, key=lambda x: x[1])
   print( sorted_score_res[0] )

@@ -278,13 +278,15 @@ if __name__ == "__main__":
   #except getopt.GetoptError:
   #  print('PDFToSQL.p -m mode; (mode can be text, image or decrption)')
   if sys.argv[1] == 'decryption':
-    rawfname_list = ['2017_Rio_FFG.pdf', '2017_Rio_NaviQG.pdf', '2017_Rio_NaviUM.pdf', '2017_Rio_OM.pdf', '2017_Rio_UVOQG.pdf', '2017_Rio_UVOUM.pdf']
+    #rawfname_list = ['2017_Rio_FFG.pdf', '2017_Rio_NaviQG.pdf', '2017_Rio_NaviUM.pdf', '2017_Rio_OM.pdf', '2017_Rio_UVOQG.pdf', '2017_Rio_UVOUM.pdf']
+    rawfname_list = ['2017_Forte_FFG.pdf', '2017_Forte_NaviQG.pdf', '2017_Forte_NaviUM.pdf', '2017_Forte_OM.pdf', '2017_Forte_UVOQG.pdf', '2017_Forte_UVOUM.pdf']
     #rawfname_list = ['2018_Rio_OM.pdf']
     myPDFDecryptor = PDFDecryptor(rawfname_list)
     myPDFDecryptor.DecrypteAllPDF()
   
   elif sys.argv[1] == 'textdb':
-    inputinfo = [ ("../RawPDF/", "2017_Rio_FFG.pdf"), ("../RawPDF/", "2017_Rio_UVOUM.pdf"), ("../RawPDF/", "2017_Rio_UVOQG.pdf"), ("../RawPDF/", "2017_Rio_NaviUM.pdf"), ("../RawPDF/", "2017_Rio_NaviQG.pdf"), ("../DecryptedPDF/", "qpdfHacked_2018_Rio_OM.pdf") ]
+    #inputinfo = [ ("../RawPDF/", "2017_Rio_FFG.pdf"), ("../RawPDF/", "2017_Rio_UVOUM.pdf"), ("../RawPDF/", "2017_Rio_UVOQG.pdf"), ("../RawPDF/", "2017_Rio_NaviUM.pdf"), ("../RawPDF/", "2017_Rio_NaviQG.pdf"), ("../DecryptedPDF/", "qpdfHacked_2017_Rio_OM.pdf") ]
+    inputinfo = [ ("../RawPDF/", "2017_Forte_FFG.pdf"), ("../RawPDF/", "2017_Forte_UVOUM.pdf"), ("../RawPDF/", "2017_Forte_UVOQG.pdf"), ("../RawPDF/", "2017_Forte_NaviUM.pdf"), ("../RawPDF/", "2017_Forte_NaviQG.pdf"), ("../DecryptedPDF/", "qpdfHacked_2017_Forte_OM.pdf") ]
     for thisinfo in inputinfo:
       print(thisinfo)
       #myPDFToSQLText = PDFToSQLText( "../RawPDF/", "2017_Rio_FFG.pdf" )
@@ -299,7 +301,7 @@ if __name__ == "__main__":
       df_text.to_sql(name = tablename, con = engine, if_exists = 'replace', index = False)
   
   elif sys.argv[1] == 'imagedb':
-    inputinfo = [ ("../RawPDF/", "2017_Rio_FFG.pdf"), ("../RawPDF/", "2017_Rio_UVOUM.pdf"), ("../RawPDF/", "2017_Rio_UVOQG.pdf"), ("../RawPDF/", "2017_Rio_NaviUM.pdf"), ("../RawPDF/", "2017_Rio_NaviQG.pdf"), ("../DecryptedPDF/", "qpdfHacked_2018_Rio_OM.pdf") ]
+    inputinfo = [ ("../RawPDF/", "2017_Rio_FFG.pdf"), ("../RawPDF/", "2017_Rio_UVOUM.pdf"), ("../RawPDF/", "2017_Rio_UVOQG.pdf"), ("../RawPDF/", "2017_Rio_NaviUM.pdf"), ("../RawPDF/", "2017_Rio_NaviQG.pdf"), ("../DecryptedPDF/", "qpdfHacked_2017_Rio_OM.pdf") ]
     for thisinfo in inputinfo:
       print(thisinfo)
       #myPDFToSQLImage = PDFToSQLImage( "../DecryptedPDF/", "qpdfHacked_2018_Rio_OM.pdf" )
