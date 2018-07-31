@@ -139,7 +139,7 @@ class PDFToSQLText:
     index = 0
     for page in PDFPage.create_pages(document):
       # Initialize the text for every page
-      extracted_text = ""
+      #extracted_text = ""
       # As the interpreter processes the page stored in PDFDocument object
       interpreter.process_page(page)
       # The device renders the layout from interpreter
@@ -147,14 +147,16 @@ class PDFToSQLText:
       # Out of the many LT objects within layout, we are interested
       # in LTTextBox and LTTextLine
       for lt_obj in layout:
+        # Initialize the text for every valid object
+        extracted_text = ""
         if (isinstance(lt_obj, LTTextBox) or isinstance(lt_obj, LTTextLine)):
           extracted_text += lt_obj.get_text()
+          #thistexts = (extracted_text.encode('utf-8').strip()).split(b'.')
+          asctexts = (extracted_text.encode('utf-8').strip()).decode("ascii", "ignore").replace("\n"," ").strip()
+          df.loc[index] = [self.fname, year, model, doctype, numpages+1, asctexts]
+          index += 1
       
       numpages += 1
-      thistexts = (extracted_text.encode('utf-8').strip()).split(b'.')
-      asctexts = (extracted_text.encode('utf-8').strip()).decode("ascii", "ignore").replace("\n"," ").strip()
-      df.loc[index] = [self.fname, year, model, doctype, numpages, asctexts]
-      index += 1
       '''
       for thistext in thistexts:
         asctext = thistext.decode("ascii", "ignore").replace("\n"," ").strip()
@@ -285,8 +287,8 @@ if __name__ == "__main__":
     myPDFDecryptor.DecrypteAllPDF()
   
   elif sys.argv[1] == 'textdb':
-    #inputinfo = [ ("../RawPDF/", "2017_Rio_FFG.pdf"), ("../RawPDF/", "2017_Rio_UVOUM.pdf"), ("../RawPDF/", "2017_Rio_UVOQG.pdf"), ("../RawPDF/", "2017_Rio_NaviUM.pdf"), ("../RawPDF/", "2017_Rio_NaviQG.pdf"), ("../DecryptedPDF/", "qpdfHacked_2017_Rio_OM.pdf") ]
-    inputinfo = [ ("../RawPDF/", "2017_Forte_FFG.pdf"), ("../RawPDF/", "2017_Forte_UVOUM.pdf"), ("../RawPDF/", "2017_Forte_UVOQG.pdf"), ("../RawPDF/", "2017_Forte_NaviUM.pdf"), ("../RawPDF/", "2017_Forte_NaviQG.pdf"), ("../DecryptedPDF/", "qpdfHacked_2017_Forte_OM.pdf") ]
+    inputinfo = [ ("../RawPDF/", "2017_Rio_FFG.pdf"), ("../RawPDF/", "2017_Rio_UVOUM.pdf"), ("../RawPDF/", "2017_Rio_UVOQG.pdf"), ("../RawPDF/", "2017_Rio_NaviUM.pdf"), ("../RawPDF/", "2017_Rio_NaviQG.pdf"), ("../DecryptedPDF/", "qpdfHacked_2017_Rio_OM.pdf") ]
+    #inputinfo = [ ("../RawPDF/", "2017_Forte_FFG.pdf"), ("../RawPDF/", "2017_Forte_UVOUM.pdf"), ("../RawPDF/", "2017_Forte_UVOQG.pdf"), ("../RawPDF/", "2017_Forte_NaviUM.pdf"), ("../RawPDF/", "2017_Forte_NaviQG.pdf"), ("../DecryptedPDF/", "qpdfHacked_2017_Forte_OM.pdf") ]
     for thisinfo in inputinfo:
       print(thisinfo)
       #myPDFToSQLText = PDFToSQLText( "../RawPDF/", "2017_Rio_FFG.pdf" )

@@ -10,6 +10,8 @@ import nltk
 from nltk.tokenize import sent_tokenize, word_tokenize
 from nltk.corpus import stopwords
 from nltk.tokenize import RegexpTokenizer
+from nltk.stem.wordnet import WordNetLemmatizer
+
 import sqlite3
 
 import gensim
@@ -45,14 +47,18 @@ class ColumnSelectorTokenization(base.BaseEstimator, base.TransformerMixin):
     sentences = []
     tokenizer = RegexpTokenizer(r'\w+')
     stopWords = set(stopwords.words('english'))
-    
+    myLemmatizer = WordNetLemmatizer()
+
     wordsFiltered = []
     words = tokenizer.tokenize(text)
     for w in words:
       wlower = w.lower()
       if wlower not in stopWords:
-        if len(wlower) > 1: # filter short word
-          wordsFiltered.append(wlower)
+        wlemma = myLemmatizer.lemmatize(myLemmatizer.lemmatize(myLemmatizer.lemmatize(myLemmatizer.lemmatize(wlower, pos='v'), pos='n'), pos='a'), pos='r')
+        #if len(wlower) > 1: # filter short word
+        if len(wlemma) > 1:
+          #wordsFiltered.append(wlower)
+          wordsFiltered.append(wlemma)
     if len(wordsFiltered) > 0:
       sentences.append(wordsFiltered)
     return sentences
@@ -83,16 +89,16 @@ if __name__ == "__main__":
   res = pre.fit_transform(df)
   #print(res['text'].values)
 
-  #w2vmodel = gensim.models.Word2Vec(res['text'].values, min_count=1)
+  w2vmodel = gensim.models.Word2Vec(res['text'].values, min_count=1)
   w2vmodelname = make + "_" + model + "_" + year + "_w2v.model"
-  #w2vmodel.save(w2vmodelname)
-  w2vmodel = gensim.models.Word2Vec.load(w2vmodelname)
+  w2vmodel.save(w2vmodelname)
+  #w2vmodel = gensim.models.Word2Vec.load(w2vmodelname)
   #sys.exit()
   #print(w2vmodel.similarity('feature', 'fuel'))
   score_res = []
   for target in res['text'].values:
     score_res.append( ( target, w2vmodel.n_similarity(['speed', 'limit', 'alert'], target) ) )
-    print(target)
+    #print(target)
     #score_res.append( ( target, w2vmodel.n_similarity(['who', 'is', 'your', 'daddy'], target) ) )
     #print(w2vmodel.n_similarity(['speed', 'limit', 'alert'], target))
 

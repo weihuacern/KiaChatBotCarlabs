@@ -1,6 +1,9 @@
 from nltk.tokenize import sent_tokenize, word_tokenize
 from nltk.corpus import stopwords
 from nltk.tokenize import RegexpTokenizer
+from nltk.stem.snowball import SnowballStemmer
+from nltk.stem.porter import PorterStemmer
+from nltk.stem.wordnet import WordNetLemmatizer
 
 if __name__ == "__main__":
   tokenizer = RegexpTokenizer(r'\w+')
@@ -11,8 +14,25 @@ if __name__ == "__main__":
   words = tokenizer.tokenize(data)
   wordsFiltered = []
  
+  #myStemmer = SnowballStemmer("english")
+  myStemmer = PorterStemmer()
+  myLemmatizer = WordNetLemmatizer()
+
   for w in words:
     if w not in stopWords:
-      wordsFiltered.append(w.lower())
+      wordsFiltered.append( myStemmer.stem(w.lower()) )
+      w_lemma_v = myLemmatizer.lemmatize(w.lower(), pos='v')
+      w_lemma_vn = myLemmatizer.lemmatize(w_lemma_v, pos='n')
+      w_lemma_vna = myLemmatizer.lemmatize(w_lemma_vn, pos='a')
+      w_lemma_vnar = myLemmatizer.lemmatize(w_lemma_vna, pos='r')
+      wordsFiltered.append( w_lemma_vnar )
  
+  #print(myStemmer.stem("engine"))
+  #print(myLemmatizer.lemmatize("engine"))
+  print( myLemmatizer.lemmatize("apple", pos='v') )
+  print( myLemmatizer.lemmatize( myLemmatizer.lemmatize("apples", pos='v'), pos='n' ) )
+  print( myLemmatizer.lemmatize("am", pos='v') )
+  print( myLemmatizer.lemmatize("is", pos='v') )
+  print( myLemmatizer.lemmatize("are", pos='v') )
+  print( myLemmatizer.lemmatize("were", pos='v') )
   print(wordsFiltered)
